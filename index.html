@@ -62,7 +62,7 @@
         pointLight.position.set(-4, 3, -2);
         scene.add(pointLight);
 
-        const controls = new OrbitControls(camera, renderer.domElement);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true; 
         controls.dampingFactor = 0.05;
 
@@ -83,7 +83,7 @@
         scene.add(gridHelper);
 
         let myCustomModel = null; 
-        const loader = new GLTFLoader();
+const loader = new THREE.GLTFLoader();
         const modelUrl = 'https://raw.githubusercontent.com/mkdesign1622-code/3d-site/main/3dmodel.glb';
 
         loader.load(
