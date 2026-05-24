@@ -1,0 +1,94 @@
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x11111e);
+
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 2, 5);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
+document.body.appendChild(renderer.domElement);
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); 
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2); 
+directionalLight.position.set(5, 10, 5);
+scene.add(directionalLight);
+
+const pointLight = new THREE.PointLight(0x7700ff, 1.5, 10);
+pointLight.position.set(-4, 3, -2);
+scene.add(pointLight);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; 
+controls.dampingFactor = 0.05;
+
+const cubeGeo = new THREE.BoxGeometry(1, 1, 1);
+const cubeMat = new THREE.MeshStandardMaterial({ color: 0x00ff88, roughness: 0.3 });
+const cube = new THREE.Mesh(cubeGeo, cubeMat);
+cube.position.x = -3; 
+scene.add(cube);
+
+const torusGeo = new THREE.TorusGeometry(0.5, 0.15, 16, 100);
+const torusMat = new THREE.MeshStandardMaterial({ color: 0xff4444, roughness: 0.2 });
+const torus = new THREE.Mesh(torusGeo, torusMat);
+torus.position.x = 3; 
+scene.add(torus);
+
+const gridHelper = new THREE.GridHelper(10, 15, 0x444466, 0x222233);
+gridHelper.position.y = -1;
+scene.add(gridHelper);
+
+let myCustomModel = null; 
+const loader = new GLTFLoader();
+const modelUrl = 'https://raw.githubusercontent.com/mkdesign1622-code/3d-site/main/3dmodel.glb';
+
+loader.load(
+    modelUrl,
+    function (gltf) {
+        myCustomModel = gltf.scene;
+        
+        const box = new THREE.Box3().setFromObject(myCustomModel);
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const targetScale = 2.0 / maxDim; 
+        myCustomModel.scale.set(targetScale, targetScale, targetScale);
+        
+        const center = box.getCenter(new THREE.Vector3());
+        myCustomModel.position.x = -center.x * targetScale;
+        myCustomModel.position.y = (-center.y * targetScale) + (size.y * targetScale / 2) - 1;
+        myCustomModel.position.z = -center.z * targetScale;
+
+        scene.add(myCustomModel);
+    },
+    null,
+    function (error) {
+        console.error(error);
+    }
+);
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    cube.rotation.x += 0.01;
+    cube.rotation.y += 0.01;
+
+    torus.rotation.y += 0.02;
+    torus.position.y = Math.sin(Date.now() * 0.002) * 0.3; 
+
+    if (myCustomModel) {
+        myCustomModel.rotation.y += 0.005; 
+    }
+
+    controls.update(); 
+    renderer.render(scene, camera); 
+}
+
+animate(); 
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
